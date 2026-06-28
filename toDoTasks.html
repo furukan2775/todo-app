@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <title>To Do list</title>
+  <style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f6f9;
+}
+
+#container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding-top: 50px;
+}
+
+#text {
+  color: gray;
+  font-size: 20px;
+}
+
+#tab {
+  width: 500px;
+}
+
+#tab > div {
+  background: white;
+  margin: 12px 0;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 3px 8px rgba(0,0,0,.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#createTask {
+  margin-top: 25px;
+}
+
+button {
+  border: none;
+  padding: 10px 16px;
+  margin: 5px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #4a90e2;
+  color: white;
+  font-size: 15px;
+  transition: .2s;
+}
+
+button:hover {
+  background: #357abd;
+}
+
+#menu {
+  position: fixed;
+  inset: 0;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background: rgba(0,0,0,.5);
+}
+
+#menu input {
+  width: 300px;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 16px;
+  margin-bottom: 15px;
+}
+
+#menu button {
+  width: 120px;
+}
+
+input {
+  outline: none;
+}
+
+button[id] {
+  background: #28a745;
+}
+
+button[id]:hover {
+  background: #1f8637;
+}
+  </style>
+ </head>
+ <body>
+  <div id="container">
+      <p id="text"> No tasks </p>
+   <div>
+     <div id="tab">
+       Task
+     </div>
+   </div>
+   
+   <div id="createTask">
+    <button type="button" onclick="oacMenu()">Add a task</button>
+    <button type="button" onclick="deleteTaskConfirmation()">Delete All tasks</button>
+    <div id="menu" style="display:none;">
+     <input id="task" placeholder="enter task"><br>
+     <button type="button" id="btn1">add</button>
+     <button type="button" onclick="oacMenu()">cancel</button>
+    </div>
+   </div>
+   
+  </div>
+  <script>
+  let menu = document.querySelector("#menu");
+  let count = 0;
+  let taskList = document.querySelector("#tab");
+  let inputTask = document.querySelector("#task");
+  let btn1 = document.querySelector("#btn1");
+  let taskArr = JSON.parse(localStorage.getItem("taskArr")) || [];
+  let compArr = JSON.parse(localStorage.getItem("compArr")) || [];
+
+  function oacMenu() {
+  if (menu.style.display == "none" ) {
+    menu.style.display = "flex" 
+  } else {
+    menu.style.display ="none" 
+  }
+  setTimeout( () => {inputTask.value = ""; } , 1 )
+  }
+  
+  function createDiv() {
+    //create div of each task and insert
+  count++;
+  let taskDiv = document.createElement("div");
+  taskDiv.setAttribute("id","tg"+count);
+  taskList.append(taskDiv);
+  taskText();
+  }
+  
+  function loadSavedTask() {
+  for (let i=1;i <= taskArr.length;i++) {
+  createDiv();
+  let taskDiv = document.querySelector(`#tg${count}`);
+  let taskName = document.createElement("div");
+  taskName.textContent =` ${count} : ${taskArr[i-1]}`   ;taskDiv.append(taskName);
+  let tgbtn = document.createElement("button");
+   tgbtn.setAttribute("id",count);
+   tgbtn.textContent = `${compArr[i-1]}`;
+   tgbtn.setAttribute("onclick","toggle(this.id)");
+   taskName.append(tgbtn);
+  }
+  }
+  
+  function addTask() {
+  createDiv();
+  
+//create task name and insert inside task table
+  let taskDiv = document.querySelector(`#tg${count}`);
+  let taskName = document.createElement("div");
+  taskName.textContent =` ${count} : ${inputTask.value}`   ;taskDiv.append(taskName);
+  taskArr.push(inputTask.value);
+  localStorage.setItem("taskArr", JSON.stringify(taskArr));
+  
+  //create task completion btn and insert
+   let tgbtn = document.createElement("button");
+   tgbtn.setAttribute("id",count);
+   tgbtn.textContent = "Not completed";
+   tgbtn.setAttribute("onclick","toggle(this.id)");
+   taskName.append(tgbtn);
+   compArr.push("Not completed");
+   localStorage.setItem("compArr", JSON.stringify(compArr));
+   
+  }//end
+  
+// add or remove no tasks text 
+   function taskText() {
+   let text = document.querySelector("#text");
+   let tab = document.querySelector("#tab");
+   if (count > 0) {text.style.display= "none" ;tab.style.display = "block" ;}
+   else {text.style.display= "" ;
+   tab.style.display = "none" ;} }
+   
+  function sumf() {
+    if (inputTask.value === "") {
+    alert("input is empty");
+   } else {addTask();oacMenu()}
+   }
+   
+    btn1.addEventListener("click",sumf) ;
+    
+    //toggle function
+function toggle(id) {
+  let btn = document.getElementById(id);
+  btn.textContent =
+    btn.textContent === "Not completed"
+      ? "Completed"
+      : "Not completed";;
+      if (btn.textContent === "Not completed") {compArr[id-1] = "Not completed";} 
+      else {compArr[id-1] = "Completed";} 
+   localStorage.setItem("compArr", JSON.stringify(compArr));
+}
+
+function removeAlltask() {
+for (let i = 1; i <= count ;i++) {
+let elem = document.getElementById("tg"+i);
+elem.remove();
+}
+count = 0;
+taskText();
+localStorage.clear();
+taskArr.length = 0;
+compArr.length = 0;
+}
+
+function deleteTaskConfirmation() {
+if ( confirm("are you sure you want to delete all tasks ? ")) {
+removeAlltask();
+}
+}
+
+taskText();
+loadSavedTask();
+  </script>
+ </body>
+</html>
+
